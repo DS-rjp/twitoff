@@ -10,7 +10,7 @@ from pickle import dumps, loads
 from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from .models import DB, Tweet, User
-import predict_user
+from .predict import predict_user
 from twitter import add_or_update_user, update_all_users
 
 # Note: we need a directory & subdirectory
@@ -60,7 +60,7 @@ def create_app():
     # create a route
     @app.route('/user/<name>', methods='GET')
     # create a function to 
-    # add a specific user using user input
+    # add a specific user using end user input
     def user(name=None, message=' '):
         # either passing in a name or pulling it from database
         name = name or request.values('user_name')
@@ -79,21 +79,24 @@ def create_app():
     # create a route
     @app.route('/compare', methods='POST')
     # create a function to 
-    # compare users
+    # compare users using end user input
     def compare(message=' '):
+        # add sorted users
         user1, user2 = sorted([request.values['user1'],
                                request.values['user2']])
         if user1 == user2:
             message = 'Cannot compare a user to themselves!'
         else: 
-            prediction = predict-user(user1,user2,
-                                      request.values['tweet_Itext'], CACHE)
+            prediction = predict_user(user1, user2,
+                                      request.values['tweet_text'], 
+                                      CACHE)
             CACHED_COMPARISONS.add((user1, user2))
             CACHE.set('comparisons', dumps(CACHED_COMPARISONS))
             message = '"{}" is more likely to be said by {} than {}'.format(
                 request.values['tweet_text'], user1 if prediction else user2,
                 user2 if prediction else user2)
-    return render_template('prediction.html', title='Prediction', message=message)
+        return render_template('prediction.html', title='Prediction', 
+                               message=message)
           
     # create a route
     @app.route('/update')

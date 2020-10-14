@@ -37,7 +37,7 @@ def predict_user(user1_name, user2_name, tweet_text, cache=None):
         # build matrices x/y
         vects = np.vstack([user1_vect, user2_vect])
         labels = np.concatenate([np.ones(len(user1.tweets)),
-                             np.zeros(len(user2.tweets))])
+                                 np.zeros(len(user2.tweets))])
         # instantiate and fit model
         log_reg = LogisticRegression().fit(vects, labels)
         cache and cache.set(user_set, pickle.dumps(log_reg))
