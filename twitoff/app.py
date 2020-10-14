@@ -84,7 +84,7 @@ def create_app():
             # cast tweets as 0; there are no tweets for a
             # user that does not exist
             tweets = []
-        return render_template('user.html', title=name,tweets=tweets,
+        return render_template('user.html', title=name, tweets=tweets,
                                message=message)
     
     # create a route
