@@ -11,17 +11,20 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from .models import DB, Tweet, User
 from .predict import predict_user
-from twitter import add_or_update_user, update_all_users
+from .twitter import add_or_update_user, update_all_users
 
 # Note: we need a directory & subdirectory
 
 load_dotenv()
 
 if getenv('FLASK_ENV') == 'production':
-    from redis import redis
-    CACHE = Redis(host=config('REDIS_HOST'), port=config('REDIS_PORT'),
-                  pasword=config('REDIS_PASWORD'))
-else:        # development/test, use local mocked REDIS
+    from redis import Redis
+    CACHE = Redis(host=config('REDIS_HOST'), 
+                  port=config('REDIS_PORT'),
+                  password=config('REDIS_PASSWORD'))
+
+# development/test, use local mocked REDIS
+else:        
     from birdisle.redis import Redis
     CACHE = Redis()
 
@@ -38,7 +41,7 @@ def create_app():
     # it's just a shortcut to using the name of the package
     app = Flask(__name__)
     # configure connection to database and persist it
-    app.config['SQLALCHEMY_DATABASE_URL'] = getenv('DATABASE_URL')
+    app.config['SQLALCHEMY_DATABASE_URI'] = getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # initialize database and connect application to database
     DB.init_app(app)
@@ -50,26 +53,25 @@ def create_app():
     # query/filter results from database
     def root():
         # SELECT * FROM User
-        Users = User.query.all()
         return render_template('base.html', title='Home',
                                 users=User.query.all(), 
                                 comparisons=CACHED_COMPARISONS)
     
     # create a route
     # for end user through form submission
-    @app.route('/user', methods='POST')
+    @app.route('/user', methods=['POST'])
     # create a route
     # access database by twitter user name
-    @app.route('/user/<name>', methods='GET')
+    @app.route('/user/<name>', methods=['GET'])
     # create a function to 
     # add a specific user using end user input
     def user(name=None, message=' '):
         # either passing in a name or pulling it from database
-        name = name or request.values('user_name')
+        name = name or request.values['user_name']
         try:
             # if end user completes a form submission...
             # the following will occur
-            if request.method == 'POST'
+            if request.method == 'POST':
                 # from .twitter.py
                 add_or_update_user(name)
                 message = 'User {} successfully added!'.format(name)
@@ -84,11 +86,12 @@ def create_app():
             # cast tweets as 0; there are no tweets for a
             # user that does not exist
             tweets = []
-        return render_template('user.html', title=name, tweets=tweets,
+        return render_template('user.html', title=name, 
+                               tweets=tweets,
                                message=message)
     
     # create a route
-    @app.route('/compare', methods='POST')
+    @app.route('/compare', methods=['POST'])
     # create a function to 
     # compare users using end user input
     def compare(message=' '):
@@ -105,7 +108,7 @@ def create_app():
             CACHE.set('comparisons', dumps(CACHED_COMPARISONS))
             message = '"{}" is more likely to be said by {} than {}'.format(
                 request.values['tweet_text'], user1 if prediction else user2,
-                user2 if prediction else user2)
+                user2 if prediction else user1)
         return render_template('prediction.html', title='Prediction', 
                                message=message)
           
@@ -117,11 +120,12 @@ def create_app():
         CACHE.flushall()
         CACHED_COMPARISONS.clear()
         insert_example_users()  
-        return render_template('base.html', title='Users updated!',
-                                users=User.query.all())
+        return render_template('base.html', 
+                               title='Users updated!',
+                               users=User.query.all())
      
     # create a route
-    @app.route(/'reset')
+    @app.route('/reset')
     # create a function to
     # reset database
     def reset():
@@ -131,7 +135,8 @@ def create_app():
         DB.drop_all()
         # re-create the database
         DB.create_all()
-        return render_templates('base.html', title='Reset database')
+        return render_templates('base.html', 
+                                title='Reset database')
                 
     return app
 

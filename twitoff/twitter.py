@@ -12,7 +12,7 @@ import spacy
 
 
 # https://greatist.com/happiness/must-follow-twitter-accounts
-TWITTER_USERS ['calebhicks', 'elonmusk', 'rrherr','SteveMartinToGo',
+TWITTER_USERS = ['calebhicks', 'elonmusk', 'rrherr','SteveMartinToGo',
                'alynkovic', 'nasa', 'sadserver', 'jkholand', 'austen',
                'common_squirrel', 'KenJennings', 'conanobrian',
                'big_ben_clock', 'IAM_SHAKESPEAR']
@@ -29,7 +29,7 @@ TWITTER = tweepy.API(TWITTER_AUTH)
 # to return string values as numpy arrays
 # for use in logistic regression model
 # (preprocessing)
-nlp = spac.load('en_core_web_md')
+nlp = spacy.load('en_core_web_md')
 def vectorized_tweet(tweet_text):
     return nlp(tweet_text).vector
 
@@ -63,7 +63,7 @@ def add_or_update_user(username):
         
         # store newest tweet id
         if tweets:
-             db_user.newest_tweet_id = tweets[0.id]
+             db_user.newest_tweet_id = tweets[0].id
 
         # instantiate, append to user, and add to database
         for tweet in tweets:
@@ -98,7 +98,7 @@ def add_users():
     (flask shell).
     '''
     # add data to database
-     for user in users:
+    for user in users:
         add_or_update_user(user)
 
     # add data to database

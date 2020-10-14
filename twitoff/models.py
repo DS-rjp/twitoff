@@ -15,11 +15,11 @@ class User(DB.Model):
     '''
     Twitter users corresponding to Tweets
     '''
-    id = DB.Columnn(DB.BigInteger, primary_key=True)
-    name = DB.Column(DB.String,(15), nullable=False)
+    id = DB.Column(DB.BigInteger, primary_key=True)
+    name = DB.Column(DB.String(15), nullable=False)
     # Tweet IDs are ordinal integers
     # they can be used to fetch only more recent
-    newest_tweet_id = DB.Column(DB.BigInterger)
+    newest_tweet_id = DB.Column(DB.BigInteger)
 
     # define representation method
     # for presentation clarification
@@ -33,8 +33,8 @@ class Tweet(DB.Model):
     # Note: migration wil allow you to change schema
     # without throwing out data but we won't cover that 
     # yet - we will jsut recreate the DB
-    id = DB.Columnn(DB.BigInteger, primary_key=True)
-    text = DB.Column(DB.Unicode,(300)) 
+    id = DB.Column(DB.BigInteger, primary_key=True)
+    text = DB.Column(DB.Unicode(300)) 
         # allows for text plus links
     embedding = DB.Column(DB.PickleType, nullable=False)
         # transforms from text to numeric objects - serializes strings
