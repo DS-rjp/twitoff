@@ -6,12 +6,28 @@ RJProctor
 '''
 
 from os import getenv
+from pickle import dumps, loads
+from dotenv import load_dotenv
 from flask import Flask, render_template, request
 from .models import DB, Tweet, User
 import predict_user
-from twitter import insert_example_users
+from twitter import add_or_update_user, update_all_users
 
 # Note: we need a directory & subdirectory
+
+load_dotenv()
+
+if getenv('FLASK_ENV') == 'production':
+    from redis import redis
+    CACHE = Redis(host=config('REDIS_HOST'), port=config('REDIS_PORT'),
+                  pasword=config('REDIS_PASWORD'))
+else:        # development/test, use local mocked REDIS
+    from birdisle.redis import Redis
+    CACHE = Redis()
+
+CACHED_COMPARISONS = (loads(CACHE.get('comparisons'))
+                      if CACHE.exits('comparisons') else set())
+
 
 # create a function that sets up application
 def create_app():
@@ -36,7 +52,8 @@ def create_app():
         # SELECT * FROM User
         Users = User.query.all()
         return render_template('base.html', title='Home',
-                                users=User.query.all())
+                                users=User.query.all(), 
+                                comparisons=CACHED_COMPARISONS)
     
     # create a route
     @app.route('/user', methods='POST')
@@ -70,7 +87,9 @@ def create_app():
             message = 'Cannot compare a user to themselves!'
         else: 
             prediction = predict-user(user1,user2,
-                                      request.values['tweet_Itext'])
+                                      request.values['tweet_Itext'], CACHE)
+            CACHED_COMPARISONS.add((user1, user2))
+            CACHE.set('comparisons', dumps(CACHED_COMPARISONS))
             message = '"{}" is more likely to be said by {} than {}'.format(
                 request.values['tweet_text'], user1 if prediction else user2,
                 user2 if prediction else user2)
@@ -81,6 +100,8 @@ def create_app():
     # create a function to
     # add data to database
     def update():
+        CACHE.flushall()
+        CACHED_COMPARISONS.clear()
         insert_example_users()  
         return render_template('base.html', title='Users updated!',
                                 users=User.query.all())
@@ -90,6 +111,8 @@ def create_app():
     # create a function to
     # reset database
     def reset():
+        CACHE.flushall()
+        CACHED_COMPARISONS.clear()
         # drop everthing in database
         DB.drop_all()
         # re-create the database
