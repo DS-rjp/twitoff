@@ -21,8 +21,8 @@ TWITTER_USERS = ['calebhicks', 'elonmusk', 'rrherr','SteveMartinToGo',
 # authorized twitter API connection
 TWITTER_AUTH = tweepy.OAuthHandler(getenv('TWITTER_API_KEY'), 
                                    getenv('TWITTER_API_KEY_SECRET'))
-TWITTER_AUTH.set_access_token(getenv('TWITTER_API_KEY'), 
-                              getenv('TWITTER_API_KEY_SECRET'))
+TWITTER_AUTH.set_access_token(getenv('TWITTER_API_BEARER_TOKEN'), 
+                              getenv('TWITTER_API_BEARER_TOKEN_SECRET'))
 TWITTER = tweepy.API(TWITTER_AUTH)
 
 # load vectorization model
