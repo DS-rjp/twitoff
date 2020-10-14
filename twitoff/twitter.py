@@ -5,11 +5,13 @@ and persist in the database
 
 RJProctor
 '''
-import Spacy
+from os import getenv
 import tweepy
 from .models import DB, Tweet, User
-from os import getenv
+import spacy
 
+
+# https://greatist.com/happiness/must-follow-twitter-accounts
 TWITTER_USERS ['calebhicks', 'elonmusk', 'rrherr','SteveMartinToGo',
                'alynkovic', 'nasa', 'sadserver', 'jkholand', 'austen',
                'common_squirrel', 'KenJennings', 'conanobrian',
@@ -17,16 +19,17 @@ TWITTER_USERS ['calebhicks', 'elonmusk', 'rrherr','SteveMartinToGo',
 
 # creates twitter object 
 # authorized twitter API connection
-TWITTER_API_KEY = getenv('TWITTER_API_KEY')
-TWITTER_API_KEY_SECRET = getenv('TWITTER_API_KEY_SECRET')
-TWITTER_AUTH = tweepy.OAuthHandler(TWITTER_API_KEY, TWITTER_API_KEY_SECRET)
+TWITTER_AUTH = tweepy.OAuthHandler(getenv('TWITTER_API_KEY'), 
+                                   getenv('TWITTER_API_KEY_SECRET'))
+TWITTER_AUTH.set_access_token(getenv('TWITTER_API_KEY'), 
+                              getenv('TWITTER_API_KEY_SECRET'))
 TWITTER = tweepy.API(TWITTER_AUTH)
 
 # load vectorization model
 # to return string values as numpy arrays
 # for use in logistic regression model
 # (preprocessing)
-nlp = spac.load('my_model')
+nlp = spac.load('en_core_web_md')
 def vectorized_tweet(tweet_text):
     return nlp(tweet_text).vector
 
@@ -65,7 +68,8 @@ def add_or_update_user(username):
         # instantiate, append to user, and add to database
         for tweet in tweets:
             # create new column/store most recent tweet
-            # with describtion of tweet in user table                                   model='twitter')
+            # with describtion of tweet in user table 
+            # calculate embedding on full tweet, but truncate for storing                                  model='twitter')
             vectorized_tweet = vectorized_tweet(tweet.full_text)
             db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],
                              vect=vectorized_tweet)
@@ -84,6 +88,28 @@ def add_or_update_user(username):
     else: 
         # save changes to database
         DB.session.commit()
+
+    # add data to database
+def add_users():
+    '''
+    Add/update a list of users 
+    (strings of user names).
+    May take awhile, so run "offline" 
+    (flask shell).
+    '''
+    # add data to database
+     for user in users:
+        add_or_update_user(user)
+
+    # add data to database
+def update_all_users():
+    '''
+    Update all Tweets for all 
+    Users in the User table.
+    '''
+    # update all user data in database
+    for user in User.query.all():
+        add_or_update_user(user.name)    
 
     # add data to database
 def insert_example_users():
