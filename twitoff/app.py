@@ -56,8 +56,10 @@ def create_app():
                                 comparisons=CACHED_COMPARISONS)
     
     # create a route
+    # for end user through form submission
     @app.route('/user', methods='POST')
     # create a route
+    # access database by twitter user name
     @app.route('/user/<name>', methods='GET')
     # create a function to 
     # add a specific user using end user input
@@ -65,13 +67,22 @@ def create_app():
         # either passing in a name or pulling it from database
         name = name or request.values('user_name')
         try:
+            # if end user completes a form submission...
+            # the following will occur
             if request.method == 'POST'
+                # from .twitter.py
                 add_or_update_user(name)
                 message = 'User {} successfully added!'.format(name)
-            # filter to the user and pull tweets
+            # filter to the user and pull tweets 
+            # associated with specific user
             tweets = User.query.filter(User.name == name).one().tweets
         except Exception as e:
+            # if an error occurs
+            # return a message to end user that includes
+            # the name of the twitter user and the error
             message = 'Error adding {}: {}'.format(name, e)
+            # cast tweets as 0; there are no tweets for a
+            # user that does not exist
             tweets = []
         return render_template('user.html', title=name,tweets=tweets,
                                message=message)
