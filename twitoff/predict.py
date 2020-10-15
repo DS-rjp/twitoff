@@ -44,7 +44,7 @@ def predict_user(user1_name, user2_name, tweet_text, cache=None):
     # define tweet embedding
     tweet_vect = vectorized_tweet(tweet_text, model='twitter')
     # predict
-    return log_reg.predict(np.array(tweet_vect)).reshape(1.-1)
+    return log_reg.predict(np.array(tweet_vect)).reshape(1.-1))
         # must brute force reshape data to avoid error
     
 
