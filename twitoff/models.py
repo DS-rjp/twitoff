@@ -7,8 +7,9 @@ RJProctor
 '''
 from flask_sqlalchemy import SQLAlchemy
 
-# instantiate a database 
+# instantiate a database
 DB = SQLAlchemy()
+
 
 # create class with inheritance from DB.Model
 class User(DB.Model):
@@ -26,6 +27,7 @@ class User(DB.Model):
     def __repr__(self):
         return '-User {}-'.format(self.name)
 
+
 class Tweet(DB.Model):
     '''
     Tweets, text, and data
@@ -36,7 +38,7 @@ class Tweet(DB.Model):
     id = DB.Column(DB.BigInteger, primary_key=True)
     text = DB.Column(DB.Unicode(300)) 
         # allows for text plus links
-    embedding = DB.Column(DB.PickleType, nullable=False)
+    vect = DB.Column(DB.PickleType, nullable=False)
         # transforms from text to numeric objects - serializes strings
     user_id = DB.Column(DB.BigInteger, DB.ForeignKey('user.id'), nullable=False)
         # relational database, connects data from this table

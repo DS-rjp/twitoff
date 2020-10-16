@@ -25,13 +25,15 @@ TWITTER_AUTH.set_access_token(getenv('TWITTER_API_BEARER_TOKEN'),
                               getenv('TWITTER_API_BEARER_TOKEN_SECRET'))
 TWITTER = tweepy.API(TWITTER_AUTH)
 
+
 # load vectorization model
 # to return string values as numpy arrays
 # for use in logistic regression model
 # (preprocessing)
-nlp = spacy.load('en_core_web_md')
-def vectorized_tweet(tweet_text):
+nlp = spacy.load('my_model')
+def vectorize_tweet(tweet_text):
     return nlp(tweet_text).vector
+
 
 # create function to add or updates a user
 # and add their corresponding tweets
@@ -63,14 +65,14 @@ def add_or_update_user(username):
         
         # store newest tweet id
         if tweets:
-             db_user.newest_tweet_id = tweets[0].id
+            db_user.newest_tweet_id = tweets[0].id
 
         # instantiate, append to user, and add to database
         for tweet in tweets:
             # create new column/store most recent tweet
             # with describtion of tweet in user table 
             # calculate embedding on full tweet, but truncate for storing                                  model='twitter')
-            vectorized_tweet = vectorized_tweet(tweet.full_text)
+            vectorized_tweet = vectorize_tweet(tweet.full_text)
             db_tweet = Tweet(id=tweet.id, text=tweet.full_text[:300],
                              vect=vectorized_tweet)
             db_user.tweets.append(db_tweet)
@@ -89,30 +91,32 @@ def add_or_update_user(username):
         # save changes to database
         DB.session.commit()
 
-    # add data to database
-def add_users():
-    '''
-    Add/update a list of users 
-    (strings of user names).
-    May take awhile, so run "offline" 
-    (flask shell).
-    '''
-    # add data to database
-    for user in users:
-        add_or_update_user(user)
 
-    # add data to database
+# # add data to database
+# def add_users():
+#     '''
+#     Add/update a list of users 
+#     (strings of user names).
+#     May take awhile, so run "offline" 
+#     (flask shell).
+#     '''
+#     # add data to database
+#     for user in users:
+#         add_or_update_user(user)
+
+
+# add data to database
 def update_all_users():
     '''
-    Update all Tweets for all 
+    Update all Tweets for all
     Users in the User table.
     '''
     # update all user data in database
     for user in User.query.all():
-        add_or_update_user(user.name)    
+        add_or_update_user(user.name)
 
-    # add data to database
-def insert_example_users():
-    # add sample data to database
-    add_or_update_user('austen')
-    add_or_update_user('elonmusk')
+#     # add data to database
+# def insert_example_users():
+#     # add sample data to database
+#     add_or_update_user('austen')
+#     add_or_update_user('elonmusk')

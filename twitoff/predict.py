@@ -8,7 +8,7 @@ import pickle
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from .models import User
-from .twitter import vectorized_tweet
+from .twitter import vectorize_tweet
 
 
 def predict_user(user1_name, user2_name, tweet_text, cache=None):
@@ -21,10 +21,11 @@ def predict_user(user1_name, user2_name, tweet_text, cache=None):
     Returns: 1 (corresponding to first user passed in)
           or 0 (seconds)
     '''
-    # sort users
+    # sort users using serialization of users
     user_set = pickle.dumps((user1_name, user2name))    
     
     if cache and cache.exists(user_set):
+        # serialize user info as prep for logistic regression model
         log_reg = pickle.loads(cache.get(user_set))
 
     else:
@@ -42,16 +43,7 @@ def predict_user(user1_name, user2_name, tweet_text, cache=None):
         log_reg = LogisticRegression().fit(vects, labels)
         cache and cache.set(user_set, pickle.dumps(log_reg))
     # define tweet embedding
-    tweet_vect = vectorized_tweet(tweet_text, model='twitter')
+    tweet_vect = vectorize_tweet(tweet_text, model='twitter')
     # predict
-    return log_reg.predict(np.array(tweet_vect)).reshape(1.-1))
+    return log_reg.predict(np.array(tweet_vect).reshape(1, -1))
         # must brute force reshape data to avoid error
-    
-
-
-    
-    
-
-
-
-
